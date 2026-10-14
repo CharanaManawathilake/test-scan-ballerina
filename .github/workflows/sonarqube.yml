@@ -1,0 +1,266 @@
+name: SonarQube
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Each job is one case, so its result and errors show on their own. Every job reports to a dummy
+# server, so even the jobs with valid settings fail at the end, when SonarScanner cannot reach it.
+
+jobs:
+  absolute-plugin:
+    name: Absolute plugin path in Scan.toml (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          paths: test/sonarqube/absolute-plugin
+          platforms: sonarqube
+          platform-config: |
+            sonarqube:
+              host-url: https://sonarqube.example.invalid
+              token: dummy-token
+              project-key: absolute-plugin
+
+  http-plugin:
+    name: http plugin URL in Scan.toml (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          paths: test/sonarqube/http-plugin
+          platforms: sonarqube
+          platform-config: |
+            sonarqube:
+              host-url: https://sonarqube.example.invalid
+              token: dummy-token
+              project-key: http-plugin
+
+  no-token:
+    name: No token (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          paths: test/projects/multi/orders
+          platforms: sonarqube
+          platform-config: |
+            sonarqube:
+              host-url: https://sonarqube.example.invalid
+              project-key: orders
+
+  empty-token:
+    name: Token from a secret that is not set (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          paths: test/projects/multi/orders
+          platforms: sonarqube
+          platform-config: |
+            sonarqube:
+              host-url: https://sonarqube.example.invalid
+              token: ${{ secrets.UNSET_SONAR_TOKEN }}
+              project-key: orders
+
+  duplicate-keys:
+    name: Two packages with the same project key (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          paths: test/projects/multi
+          platforms: sonarqube
+          platform-config: |
+            sonarqube:
+              host-url: https://sonarqube.example.invalid
+              token: dummy-token
+              packages:
+                - path: test/projects/multi/orders
+                  project-key: shared-key
+                - path: test/projects/multi/payments
+                  project-key: shared-key
+
+  shared-project-key:
+    name: Platform-level project key for two packages (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          paths: test/projects/multi
+          platforms: sonarqube
+          platform-config: |
+            sonarqube:
+              host-url: https://sonarqube.example.invalid
+              token: dummy-token
+              project-key: shared-key
+
+  http-host:
+    name: http server URL (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          paths: test/projects/multi/orders
+          platforms: sonarqube
+          platform-config: |
+            sonarqube:
+              host-url: http://sonarqube.example.invalid
+              token: dummy-token
+              project-key: orders
+
+  unmatched-package:
+    name: Package settings that match no package (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          paths: test/projects/multi/orders
+          platforms: sonarqube
+          platform-config: |
+            sonarqube:
+              host-url: https://sonarqube.example.invalid
+              token: dummy-token
+              project-key: orders
+              packages:
+                - path: test/projects/missing
+                  project-key: missing
+
+  remote-plugin:
+    name: Plugin from an https URL in Scan.toml (fails at the dummy server)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+
+      # Serves the platform plugin at the URL in test/sonarqube/remote-plugin/Scan.toml, with a
+      # self-signed certificate that the runner trusts.
+      - name: Serve the plugin over https
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          DIR="$RUNNER_TEMP/plugin-server"
+          mkdir -p "$DIR/www"
+          cd "$DIR"
+          curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" -o www/sonar-platform-plugin.jar \
+            https://maven.pkg.github.com/ballerina-platform/sonar-ballerina/io/ballerina/sonar/sonar-platform-plugin/0.3.0/sonar-platform-plugin-0.3.0.jar
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj /CN=localhost \
+            -addext subjectAltName=DNS:localhost -keyout key.pem -out cert.pem
+          sudo cp cert.pem /usr/local/share/ca-certificates/plugin-server.crt
+          sudo update-ca-certificates
+          cat > server.py << 'PY'
+          import functools, http.server, ssl
+          handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory="www")
+          server = http.server.HTTPServer(("localhost", 8443), handler)
+          context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+          context.load_cert_chain("cert.pem", "key.pem")
+          server.socket = context.wrap_socket(server.socket, server_side=True)
+          server.serve_forever()
+          PY
+          nohup python3 server.py > server.log 2>&1 &
+          for _ in $(seq 1 10); do
+            curl -fsS -o /dev/null https://localhost:8443/sonar-platform-plugin.jar && exit 0
+            sleep 1
+          done
+          cat server.log
+          echo "::error::The plugin server did not start"
+          exit 1
+
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/sonarqube/remote-plugin
+          platforms: sonarqube
+          platform-config: |
+            sonarqube:
+              host-url: https://sonarqube.example.invalid
+              token: dummy-token
+              project-key: remote-plugin
+
+  plugin-version:
+    name: Plugin version 0.2.0 (fails at the dummy server)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/multi/orders
+          platforms: sonarqube
+          platform-config: |
+            sonarqube:
+              plugin-version: 0.2.0
+              host-url: https://sonarqube.example.invalid
+              token: dummy-token
+              project-key: orders
+
+  properties-file:
+    name: Key and name from sonar-project.properties (fails at the dummy server)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+      # Only host-url and token are given, so the key and name come from the properties file.
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/sonarqube/properties
+          platforms: sonarqube
+          platform-config: |
+            sonarqube:
+              host-url: https://sonarqube.example.invalid
+              token: dummy-token
+
+  properties-file-override:
+    name: project-key overriding sonar-project.properties (fails at the dummy server)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/sonarqube/properties
+          platforms: sonarqube
+          platform-config: |
+            sonarqube:
+              host-url: https://sonarqube.example.invalid
+              token: dummy-token
+              project-key: override-key

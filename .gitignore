@@ -1,0 +1,5 @@
+# Ballerina build and scan output of the test packages
+target/
+Dependencies.toml
+.scannerwork/
+ballerina-static-code-analysis-results.json

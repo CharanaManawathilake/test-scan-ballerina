@@ -1,0 +1,216 @@
+name: Inputs
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Each job is one case, so its result, annotations and job summary show on their own.
+# Findings bal scan reports for each package:
+#   test/projects/single                    6 low
+#   test/projects/multi/orders              1 low
+#   test/projects/multi/payments            2 low
+#   test/projects/services/api              1 low
+#   test/projects/services/internal/legacy  2 low
+#   test/projects/secrets                   1 medium
+
+jobs:
+  compatible-versions:
+    name: 1. Compatible Ballerina and scan tool versions (passes)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          tool-version: 0.12.0
+          paths: test/projects/single
+
+  incompatible-versions:
+    name: 2. Scan tool version incompatible with Ballerina (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # bal scan 0.12.0 needs Ballerina 2201.13 or later.
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.12.0
+          tool-version: 0.12.0
+          paths: test/projects/single
+
+  code-scanning:
+    name: 3. Upload to GitHub code scanning (passes)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan and upload
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/single
+          platforms: github-code-scanning
+          category: bal-scan-test
+
+  single-path:
+    name: 4. One path with several packages (passes, 2 packages)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/multi
+
+  exclude-paths:
+    name: 5. Several paths with a package excluded (passes, 3 packages)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: |
+            test/projects/multi
+            test/projects/services
+          exclude-paths: test/projects/services/internal/legacy
+
+  categories:
+    name: 6. Two categories in one job (passes)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan orders
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/multi/orders
+          category: orders
+      - name: Scan payments
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          paths: test/projects/multi/payments
+          category: payments
+
+  fail-on-medium-low-findings:
+    name: 7a. Fail on medium, low findings only (passes)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/single
+          fail-on-severity: medium
+
+  fail-on-medium-medium-finding:
+    name: 7b. Fail on medium, one medium finding (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/secrets
+          fail-on-severity: medium
+
+  max-findings-without-gate:
+    name: 8. Max findings without fail-on-severity (passes)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The gate is off, so max-findings has no effect, even with 6 findings.
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/single
+          max-findings: 1
+
+  severity-and-max-findings-at-limit:
+    name: 9a. Fail on low with max findings at the limit (passes)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # 6 findings, and 6 are allowed.
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/single
+          fail-on-severity: low
+          max-findings: 6
+
+  severity-and-max-findings-over-limit:
+    name: 9b. Fail on low with max findings over the limit (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # 6 findings, and 5 are allowed.
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/single
+          fail-on-severity: low
+          max-findings: 5
+
+  annotations-on:
+    name: 10a. Annotations on (passes, with annotations)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/single
+          annotations: true
+
+  annotations-off:
+    name: 10b. Annotations off (passes, no annotations)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/single
+
+  job-summary-on:
+    name: 11a. Job summary on (passes, with a summary)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/single
+
+  job-summary-off:
+    name: 11b. Job summary off (passes, no summary)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/single
+          job-summary: false
