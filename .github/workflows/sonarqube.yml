@@ -16,8 +16,17 @@ permissions:
 # Execute Analysis and Create Projects permissions so that each project key is created on its first
 # analysis. That server needs the Ballerina plugin installed.
 # Each scan saves its SARIF file as an artifact named after its category, which is the job ID.
+#
+# The action resolves each setting of a package field by field: the package's item under packages,
+# then the platform level of platform-config, then the package's Scan.toml and properties file.
+# The comment above each job gives what each setting resolves to, and from where.
 
 jobs:
+  # Plugin: no plugin-path or plugin-version is given, so it comes from the sonarqube [[platform]]
+  # entry in the package's Scan.toml: the absolute path /opt/sonar/sonar-platform-plugin.jar, which
+  # fails since it points to one machine.
+  # Server, token and key: https://sonarqube.example.invalid, dummy-token and absolute-plugin, from
+  # the platform level.
   absolute-plugin:
     name: Absolute plugin path in Scan.toml (fails)
     runs-on: ubuntu-latest
@@ -36,6 +45,11 @@ jobs:
               token: dummy-token
               project-key: absolute-plugin
 
+  # Plugin: no plugin-path or plugin-version is given, so it comes from the sonarqube [[platform]]
+  # entry in the package's Scan.toml: http://localhost:8443/sonar-platform-plugin.jar, which fails
+  # since only an https URL or a path relative to the package is accepted.
+  # Server, token and key: https://sonarqube.example.invalid, dummy-token and http-plugin, from the
+  # platform level.
   http-plugin:
     name: http plugin URL in Scan.toml (fails)
     runs-on: ubuntu-latest
@@ -54,6 +68,10 @@ jobs:
               token: dummy-token
               project-key: http-plugin
 
+  # Token: not given at the platform level, and orders has no packages item, so it resolves to
+  # nothing and fails. A token is never read from Scan.toml or a properties file.
+  # Server and key: https://sonarqube.example.invalid and orders, from the platform level.
+  # On a pull request from a fork, the action skips SonarQube with a warning instead, so this passes.
   no-token:
     name: No token (fails)
     runs-on: ubuntu-latest
@@ -71,6 +89,10 @@ jobs:
               host-url: https://sonarqube.example.invalid
               project-key: orders
 
+  # Token: secrets.UNSET_SONAR_TOKEN, which is not set, so the token field is given but empty, and
+  # it fails. Keep that secret unset.
+  # Server and key: https://sonarqube.example.invalid and orders, from the platform level.
+  # On a pull request from a fork, the action skips SonarQube with a warning instead, so this passes.
   empty-token:
     name: Token from a secret that is not set (fails)
     runs-on: ubuntu-latest
@@ -89,6 +111,11 @@ jobs:
               token: ${{ secrets.UNSET_SONAR_TOKEN }}
               project-key: orders
 
+  # Packages: test/projects/multi holds orders and payments, and each has a packages item.
+  # Key: shared-key for both, from their items.
+  # Server: https://sonarqube.example.invalid for both, from the platform level, so both packages
+  # are the same project on the same server, and it fails since each analysis would replace the
+  # previous one.
   duplicate-keys:
     name: Two packages with the same project key (fails)
     runs-on: ubuntu-latest
@@ -111,6 +138,9 @@ jobs:
                 - path: test/projects/multi/payments
                   project-key: shared-key
 
+  # Packages: test/projects/multi holds orders and payments, and neither has a packages item.
+  # Key: shared-key at the platform level would apply to both. A platform-level project-key or
+  # project-name is only for a scan of one package, so it fails.
   shared-project-key:
     name: Platform-level project key for two packages (fails)
     runs-on: ubuntu-latest
@@ -129,6 +159,84 @@ jobs:
               token: dummy-token
               project-key: shared-key
 
+  # Packages: test/projects/multi holds orders and payments. Only orders has a packages item.
+  # Key: orders has its own, and shared-key at the platform level would go to payments, the one
+  # package left without a key. Two packages are scanned, so the platform-level key fails, whatever
+  # the items set.
+  leftover-project-key:
+    name: Platform-level project key with one package keyed under packages (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          paths: test/projects/multi
+          category: leftover-project-key
+          artifacts: sarif
+          platforms: sonarqube
+          platform-config: |
+            sonarqube:
+              host-url: https://sonarqube.example.invalid
+              token: dummy-token
+              project-key: shared-key
+              packages:
+                - path: test/projects/multi/orders
+                  project-key: orders
+
+  # Packages: test/projects/multi holds orders and payments, and each has its own key in its item.
+  # Name: Shared Name at the platform level would name both projects. project-name follows the
+  # same rule as project-key, so it fails.
+  shared-project-name:
+    name: Platform-level project name for two keyed packages (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          paths: test/projects/multi
+          category: shared-project-name
+          artifacts: sarif
+          platforms: sonarqube
+          platform-config: |
+            sonarqube:
+              host-url: https://sonarqube.example.invalid
+              token: dummy-token
+              project-name: Shared Name
+              packages:
+                - path: test/projects/multi/orders
+                  project-key: orders
+                - path: test/projects/multi/payments
+                  project-key: payments
+
+  # Packages: only orders is scanned, so a platform-level key is allowed.
+  # Key: orders at the platform level and orders-item in its packages item. Setting it in both
+  # places fails, instead of one silently winning.
+  project-key-twice:
+    name: Project key at the platform level and in the package's item (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          paths: test/projects/multi/orders
+          category: project-key-twice
+          artifacts: sarif
+          platforms: sonarqube
+          platform-config: |
+            sonarqube:
+              host-url: https://sonarqube.example.invalid
+              token: dummy-token
+              project-key: orders
+              packages:
+                - path: test/projects/multi/orders
+                  project-key: orders-item
+
+  # Server: http://sonarqube.example.invalid, from the platform level, which fails since the token
+  # is sent to it and only https is accepted.
+  # Token and key: dummy-token and orders, from the platform level.
   http-host:
     name: http server URL (fails)
     runs-on: ubuntu-latest
@@ -147,6 +255,10 @@ jobs:
               token: dummy-token
               project-key: orders
 
+  # Packages: only orders is scanned, so the packages item test/projects/missing matches no package,
+  # and it fails.
+  # Server, token and key of orders: https://sonarqube.example.invalid, dummy-token and orders, from
+  # the platform level.
   unmatched-package:
     name: Package settings that match no package (fails)
     runs-on: ubuntu-latest
@@ -168,6 +280,12 @@ jobs:
                 - path: test/projects/missing
                   project-key: missing
 
+  # Plugin: no plugin-path or plugin-version is given, so it comes from the sonarqube [[platform]]
+  # entry in the package's Scan.toml: https://localhost:8443/sonar-platform-plugin.jar, served by
+  # the first step.
+  # Server and token: vars.SONAR_HOST_URL and secrets.SONAR_TOKEN, from the platform level.
+  # Key: remote-plugin, from the platform level. No project-name is given and the package has no
+  # properties file, so SonarQube names the project after its key.
   remote-plugin:
     name: Plugin from an https URL in Scan.toml (passes)
     runs-on: ubuntu-latest
@@ -226,6 +344,10 @@ jobs:
               token: ${{ secrets.SONAR_TOKEN }}
               project-key: remote-plugin
 
+  # Plugin: version 0.2.0 from plugin-version at the platform level, downloaded from GitHub Packages.
+  # Without it, orders, which has no Scan.toml, would get the version the action pins, 0.3.0.
+  # Server and token: vars.SONAR_HOST_URL and secrets.SONAR_TOKEN, from the platform level.
+  # Key: orders, from the platform level, and the project is named after it.
   plugin-version:
     name: Plugin version 0.2.0 (passes)
     runs-on: ubuntu-latest
@@ -249,6 +371,13 @@ jobs:
               token: ${{ secrets.SONAR_TOKEN }}
               project-key: orders
 
+  # Properties file: no properties-file is given and the package has no Scan.toml, so it is the
+  # package's sonar-project.properties.
+  # Plugin: the version the action pins, 0.3.0, since the package has no Scan.toml.
+  # Server and token: vars.SONAR_HOST_URL and secrets.SONAR_TOKEN, from the platform level. The
+  # host-url overrides sonar.host.url in the file, https://properties.example.invalid.
+  # Key and name: properties-key and Properties Name, from sonar.projectKey and sonar.projectName in
+  # the file, since only host-url and token are given.
   properties-file:
     name: Key and name from sonar-project.properties (passes)
     runs-on: ubuntu-latest
@@ -257,7 +386,6 @@ jobs:
       packages: read
     steps:
       - uses: actions/checkout@v4
-      # Only host-url and token are given, so the key and name come from the properties file.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@main
         with:
@@ -271,6 +399,9 @@ jobs:
               host-url: ${{ vars.SONAR_HOST_URL }}
               token: ${{ secrets.SONAR_TOKEN }}
 
+  # Properties file, plugin, server and token: as in properties-file.
+  # Key: override-key, from the platform level, which overrides sonar.projectKey in the file.
+  # Name: Properties Name, from sonar.projectName in the file, since no project-name is given.
   properties-file-override:
     name: project-key overriding sonar-project.properties (passes)
     runs-on: ubuntu-latest
@@ -292,3 +423,35 @@ jobs:
               host-url: ${{ vars.SONAR_HOST_URL }}
               token: ${{ secrets.SONAR_TOKEN }}
               project-key: override-key
+
+  # Packages: test/projects/multi holds orders and payments, and exclude-paths leaves only orders.
+  # Packages are counted after exclude-paths, so this is a scan of one package.
+  # Key: platform-key, from the platform level.
+  # Name: Platform Key, from the packages item of orders. The item does not set project-key, so it
+  # does not conflict with the platform-level key.
+  # Plugin, server and token: as in plugin-version, with the pinned plugin version.
+  platform-project-key:
+    name: Platform-level project key for the one package left after exclude-paths (passes)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/multi
+          exclude-paths: test/projects/multi/payments
+          category: platform-project-key
+          artifacts: sarif
+          platforms: sonarqube
+          platform-config: |
+            sonarqube:
+              host-url: ${{ vars.SONAR_HOST_URL }}
+              token: ${{ secrets.SONAR_TOKEN }}
+              project-key: platform-key
+              packages:
+                - path: test/projects/multi/orders
+                  project-name: Platform Key

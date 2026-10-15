@@ -20,6 +20,11 @@ permissions:
 #   test/projects/services/api              1 low
 #   test/projects/services/internal/legacy  2 low
 #   test/projects/secrets                   1 medium
+#   test/projects/with-tests                2 low, 1 of them in tests/
+# Rules behind those findings:
+#   single      ballerina:1, ballerina:2, ballerina:3, ballerina:7, ballerina:10, ballerina:11
+#   secrets     ballerina:14
+#   with-tests  ballerina:1 in main.bal, ballerina:1 in tests/main_test.bal
 
 jobs:
   compatible-versions:
@@ -146,6 +151,35 @@ jobs:
           artifacts: sarif
           fail-on-severity: medium
 
+  fail-on-high-medium-finding:
+    name: 7c. Fail on high, one medium finding (passes)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/secrets
+          category: high-only
+          artifacts: sarif
+          fail-on-severity: high
+
+  fail-on-severity-uppercase:
+    name: 7d. Fail on MEDIUM in upper case, one medium finding (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # fail-on-severity is not case sensitive.
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/secrets
+          category: medium-uppercase
+          artifacts: sarif
+          fail-on-severity: MEDIUM
+
   max-findings-without-gate:
     name: 8. Max findings without fail-on-severity (passes)
     runs-on: ubuntu-latest
@@ -233,6 +267,7 @@ jobs:
           paths: test/projects/single
           category: with-summary
           artifacts: sarif
+          job-summary: true
 
   job-summary-off:
     name: 11b. Job summary off (passes, no summary)
@@ -287,3 +322,315 @@ jobs:
           paths: test/projects/multi/orders
           category: artifacts-unknown
           artifacts: sarif,html
+
+  include-rules:
+    name: 13a. Include rules (passes, 2 of 6 findings)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Only ballerina:1 and ballerina:10 are reported, so the 2 findings fit max-findings.
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/single
+          category: include-rules
+          artifacts: sarif
+          include-rules: ballerina:1,ballerina:10
+          fail-on-severity: low
+          max-findings: 2
+
+  exclude-rules:
+    name: 13b. Exclude rules (passes, 4 of 6 findings)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # ballerina:1 and ballerina:10 are left out, so the 4 other findings fit max-findings.
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/single
+          category: exclude-rules
+          artifacts: sarif
+          exclude-rules: ballerina:1,ballerina:10
+          fail-on-severity: low
+          max-findings: 4
+
+  exclude-medium-rule:
+    name: 13c. Exclude the rule behind the medium finding (passes, no findings)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The same scan as 7b, which fails without exclude-rules.
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/secrets
+          category: exclude-medium-rule
+          artifacts: sarif
+          exclude-rules: ballerina:14
+          fail-on-severity: medium
+
+  include-rule-matching-nothing:
+    name: 13d. Include a rule no finding matches (passes, no findings)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/single
+          category: include-rule-matching-nothing
+          artifacts: sarif
+          include-rules: ballerina:999
+          fail-on-severity: low
+
+  include-and-exclude-rules:
+    name: 13e. Include and exclude rules together (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/single
+          category: include-and-exclude-rules
+          artifacts: sarif
+          include-rules: ballerina:1
+          exclude-rules: ballerina:10
+
+  invalid-rule-id:
+    name: 13f. Rule name instead of a rule ID (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/single
+          category: invalid-rule-id
+          artifacts: sarif
+          include-rules: ballerina:1,checkpanic
+
+  exclude-tests-default:
+    name: 14a. Exclude tests by default (passes, 1 of 2 findings)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # exclude-tests is not set. The finding in tests/ is dropped, so 1 finding fits max-findings.
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/with-tests
+          category: exclude-tests-default
+          artifacts: sarif
+          fail-on-severity: low
+          max-findings: 1
+
+  exclude-tests-off:
+    name: 14b. Keep the findings in tests (fails, 2 findings)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The finding in tests/ is counted, so 2 findings are over max-findings.
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/with-tests
+          category: exclude-tests-off
+          artifacts: sarif
+          exclude-tests: false
+          fail-on-severity: low
+          max-findings: 1
+
+  exclude-tests-invalid:
+    name: 14c. exclude-tests that is not true or false (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/with-tests
+          category: exclude-tests-invalid
+          artifacts: sarif
+          exclude-tests: 'yes'
+
+  exclude-paths-single-star:
+    name: 15a. Exclude with * that stays within one directory (passes, 2 packages)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # legacy is two directories below services, so test/projects/*/legacy does not match it.
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/services
+          exclude-paths: test/projects/*/legacy
+          category: exclude-paths-single-star
+          artifacts: sarif
+
+  exclude-paths-double-star:
+    name: 15b. Exclude with ** that crosses directories (passes, 1 package)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/services
+          exclude-paths: test/projects/**/legacy
+          category: exclude-paths-double-star
+          artifacts: sarif
+
+  exclude-paths-files:
+    name: 15c. Exclude the files of a package (passes, 2 packages, 1 finding)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # payments is still scanned, but its findings are dropped, so the 1 finding in orders fits max-findings.
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/multi
+          exclude-paths: test/projects/multi/payments/*.bal
+          category: exclude-paths-files
+          artifacts: sarif
+          fail-on-severity: low
+          max-findings: 1
+
+  exclude-paths-everything:
+    name: 15d. Exclude every package (passes, skipped with a warning)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/multi
+          exclude-paths: test/projects/multi
+          category: exclude-paths-everything
+          artifacts: sarif
+
+  exclude-paths-absolute:
+    name: 15e. Absolute path in exclude-paths (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/multi
+          exclude-paths: /test/projects/multi/payments
+          category: exclude-paths-absolute
+          artifacts: sarif
+
+  comma-separated-paths:
+    name: 16a. Comma separated paths (passes, 2 packages)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/multi/orders,test/projects/services/api
+          category: comma-separated-paths
+          artifacts: sarif
+
+  path-without-packages:
+    name: 16b. Path without a package (passes, skipped with a warning)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: .github
+          category: path-without-packages
+          artifacts: sarif
+
+  path-missing:
+    name: 16c. Path that does not exist (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/missing
+          category: path-missing
+          artifacts: sarif
+
+  path-file:
+    name: 16d. Path to a file (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/single/main.bal
+          category: path-file
+          artifacts: sarif
+
+  path-outside-repository:
+    name: 16e. Path outside the repository (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: ..
+          category: path-outside-repository
+          artifacts: sarif
+
+  default-versions:
+    name: 17. Default Ballerina and scan tool versions (passes)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Installs the latest Ballerina and the scan tool version pinned by the action.
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          paths: test/projects/single
+          category: default-versions
+          artifacts: sarif
+
+  invalid-inputs:
+    name: 18. Several invalid inputs (fails, every problem reported at once)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: '2201 13'
+          tool-version: '0.12'
+          platforms: gitlab
+          paths: test/projects/single
+          category: invalid-inputs
+          artifacts: sarif
+          fail-on-severity: critical
+          max-findings: '-1'
+          annotations: 'yes'
+          job-summary: 'no'
