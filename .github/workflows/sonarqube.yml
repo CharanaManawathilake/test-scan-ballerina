@@ -37,7 +37,7 @@ jobs:
         with:
           paths: test/sonarqube/absolute-plugin
           category: absolute-plugin
-          artifacts: sarif
+          artifacts: true
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -60,7 +60,7 @@ jobs:
         with:
           paths: test/sonarqube/http-plugin
           category: http-plugin
-          artifacts: sarif
+          artifacts: true
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -82,7 +82,7 @@ jobs:
         with:
           paths: test/projects/multi/orders
           category: no-token
-          artifacts: sarif
+          artifacts: true
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -103,7 +103,7 @@ jobs:
         with:
           paths: test/projects/multi/orders
           category: empty-token
-          artifacts: sarif
+          artifacts: true
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -126,7 +126,7 @@ jobs:
         with:
           paths: test/projects/multi
           category: duplicate-keys
-          artifacts: sarif
+          artifacts: true
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -151,7 +151,7 @@ jobs:
         with:
           paths: test/projects/multi
           category: shared-project-key
-          artifacts: sarif
+          artifacts: true
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -173,7 +173,7 @@ jobs:
         with:
           paths: test/projects/multi
           category: leftover-project-key
-          artifacts: sarif
+          artifacts: true
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -197,7 +197,7 @@ jobs:
         with:
           paths: test/projects/multi
           category: shared-project-name
-          artifacts: sarif
+          artifacts: true
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -223,7 +223,7 @@ jobs:
         with:
           paths: test/projects/multi/orders
           category: project-key-twice
-          artifacts: sarif
+          artifacts: true
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -247,7 +247,7 @@ jobs:
         with:
           paths: test/projects/multi/orders
           category: http-host
-          artifacts: sarif
+          artifacts: true
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -269,7 +269,7 @@ jobs:
         with:
           paths: test/projects/multi/orders
           category: unmatched-package
-          artifacts: sarif
+          artifacts: true
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -336,7 +336,7 @@ jobs:
           ballerina-version: 2201.13.5
           paths: test/sonarqube/remote-plugin
           category: remote-plugin
-          artifacts: sarif
+          artifacts: true
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -362,7 +362,7 @@ jobs:
           ballerina-version: 2201.13.5
           paths: test/projects/multi/orders
           category: plugin-version
-          artifacts: sarif
+          artifacts: true
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -392,7 +392,7 @@ jobs:
           ballerina-version: 2201.13.5
           paths: test/sonarqube/properties
           category: properties-file
-          artifacts: sarif
+          artifacts: true
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -416,7 +416,7 @@ jobs:
           ballerina-version: 2201.13.5
           paths: test/sonarqube/properties
           category: properties-file-override
-          artifacts: sarif
+          artifacts: true
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -445,7 +445,7 @@ jobs:
           paths: test/projects/multi
           exclude-paths: test/projects/multi/payments
           category: platform-project-key
-          artifacts: sarif
+          artifacts: true
           platforms: sonarqube
           platform-config: |
             sonarqube:

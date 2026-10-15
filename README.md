@@ -4,7 +4,7 @@ Test cases for the [scan-ballerina](https://github.com/CharanaManawathilake/scan
 
 Each job is one case, so its result, annotations and job summary show on their own.
 
-Every scan saves its SARIF file as a workflow artifact (`artifacts: sarif`) named after its `category`, so the SARIF file can be downloaded from the run's summary page, even when the scan fails. Artifact names are unique within a workflow run, so each scan has its own `category`.
+Every scan saves its SARIF file as a workflow artifact (`artifacts: true`) named after its `category`, so the SARIF file can be downloaded from the run's summary page, even when the scan fails. Artifact names are unique within a workflow run, so each scan has its own `category`.
 
 ## Inputs workflow
 
@@ -27,9 +27,10 @@ Every scan saves its SARIF file as a workflow artifact (`artifacts: sarif`) name
 | 10b. Annotations off | Passes; no finding annotations |
 | 11a. Job summary on | Passes; job summary written |
 | 11b. Job summary off | Passes; no job summary |
-| 12a. Save the SARIF file and the Ballerina reports | Passes; the `artifacts-both` artifact holds `artifacts-both.sarif` and a `scan_results.json` for each of the 2 packages |
-| 12b. Empty artifacts | Passes; no artifact saved |
-| 12c. Unknown report in artifacts | Fails: unknown report `html`; no artifact saved |
+| 12a. Save the SARIF file | Passes; the `artifacts-true` artifact holds `artifacts-true.sarif` only |
+| 12b. Artifacts false | Passes; no artifact saved |
+| 12c. Artifacts left out | Passes; no artifact saved, since `artifacts` defaults to `false` |
+| 12d. Artifacts not true or false | Fails: `artifacts must be 'true' or 'false', got 'sarif'`; no artifact saved |
 | 13a. Include rules | Passes; 2 of 6 findings, `ballerina:1` and `ballerina:10` |
 | 13b. Exclude rules | Passes; 4 of 6 findings, without `ballerina:1` and `ballerina:10` |
 | 13c. Exclude the rule behind the medium finding | Passes; no findings, where 7b fails |
