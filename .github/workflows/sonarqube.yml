@@ -344,12 +344,12 @@ jobs:
               token: ${{ secrets.SONAR_TOKEN }}
               project-key: remote-plugin
 
-  # Plugin: version 0.2.0 from plugin-version at the platform level, downloaded from GitHub Packages.
-  # Without it, orders, which has no Scan.toml, would get the version the action pins, 0.3.0.
+  # Plugin: version 0.3.0 from plugin-version at the platform level, downloaded from GitHub Packages.
+  # This is also the version the action pins, which orders, with no Scan.toml, would get without it.
   # Server and token: vars.SONAR_HOST_URL and secrets.SONAR_TOKEN, from the platform level.
   # Key: orders, from the platform level, and the project is named after it.
   plugin-version:
-    name: Plugin version 0.2.0 (passes)
+    name: Plugin version 0.3.0 (passes)
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -366,7 +366,7 @@ jobs:
           platforms: sonarqube
           platform-config: |
             sonarqube:
-              plugin-version: 0.2.0
+              plugin-version: 0.3.0
               host-url: ${{ vars.SONAR_HOST_URL }}
               token: ${{ secrets.SONAR_TOKEN }}
               project-key: orders
