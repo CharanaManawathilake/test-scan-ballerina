@@ -12,6 +12,7 @@ permissions:
 
 # Each job is one case, so its result and errors show on their own. Every job reports to a dummy
 # server, so even the jobs with valid settings fail at the end, when SonarScanner cannot reach it.
+# Each scan saves its SARIF file as an artifact named after its category, which is the job ID.
 
 jobs:
   absolute-plugin:
@@ -23,6 +24,8 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@main
         with:
           paths: test/sonarqube/absolute-plugin
+          category: absolute-plugin
+          artifacts: sarif
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -39,6 +42,8 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@main
         with:
           paths: test/sonarqube/http-plugin
+          category: http-plugin
+          artifacts: sarif
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -55,6 +60,8 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@main
         with:
           paths: test/projects/multi/orders
+          category: no-token
+          artifacts: sarif
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -70,6 +77,8 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@main
         with:
           paths: test/projects/multi/orders
+          category: empty-token
+          artifacts: sarif
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -86,6 +95,8 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@main
         with:
           paths: test/projects/multi
+          category: duplicate-keys
+          artifacts: sarif
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -106,6 +117,8 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@main
         with:
           paths: test/projects/multi
+          category: shared-project-key
+          artifacts: sarif
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -122,6 +135,8 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@main
         with:
           paths: test/projects/multi/orders
+          category: http-host
+          artifacts: sarif
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -138,6 +153,8 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@main
         with:
           paths: test/projects/multi/orders
+          category: unmatched-package
+          artifacts: sarif
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -197,6 +214,8 @@ jobs:
         with:
           ballerina-version: 2201.13.5
           paths: test/sonarqube/remote-plugin
+          category: remote-plugin
+          artifacts: sarif
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -217,6 +236,8 @@ jobs:
         with:
           ballerina-version: 2201.13.5
           paths: test/projects/multi/orders
+          category: plugin-version
+          artifacts: sarif
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -239,6 +260,8 @@ jobs:
         with:
           ballerina-version: 2201.13.5
           paths: test/sonarqube/properties
+          category: properties-file
+          artifacts: sarif
           platforms: sonarqube
           platform-config: |
             sonarqube:
@@ -258,6 +281,8 @@ jobs:
         with:
           ballerina-version: 2201.13.5
           paths: test/sonarqube/properties
+          category: properties-file-override
+          artifacts: sarif
           platforms: sonarqube
           platform-config: |
             sonarqube:

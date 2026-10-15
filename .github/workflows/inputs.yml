@@ -11,6 +11,8 @@ permissions:
   contents: read
 
 # Each job is one case, so its result, annotations and job summary show on their own.
+# Each scan saves its SARIF file as an artifact named after its category. Artifact names are
+# unique within a workflow run, so every scan has its own category.
 # Findings bal scan reports for each package:
 #   test/projects/single                    6 low
 #   test/projects/multi/orders              1 low
@@ -31,6 +33,8 @@ jobs:
           ballerina-version: 2201.13.5
           tool-version: 0.12.0
           paths: test/projects/single
+          category: compatible-versions
+          artifacts: sarif
 
   incompatible-versions:
     name: 2. Scan tool version incompatible with Ballerina (fails)
@@ -44,6 +48,8 @@ jobs:
           ballerina-version: 2201.12.0
           tool-version: 0.12.0
           paths: test/projects/single
+          category: incompatible-versions
+          artifacts: sarif
 
   code-scanning:
     name: 3. Upload to GitHub code scanning (passes)
@@ -61,6 +67,7 @@ jobs:
           paths: test/projects/single
           platforms: github-code-scanning
           category: bal-scan-test
+          artifacts: sarif
 
   single-path:
     name: 4. One path with several packages (passes, 2 packages)
@@ -72,6 +79,8 @@ jobs:
         with:
           ballerina-version: 2201.13.5
           paths: test/projects/multi
+          category: single-path
+          artifacts: sarif
 
   exclude-paths:
     name: 5. Several paths with a package excluded (passes, 3 packages)
@@ -86,6 +95,8 @@ jobs:
             test/projects/multi
             test/projects/services
           exclude-paths: test/projects/services/internal/legacy
+          category: exclude-paths
+          artifacts: sarif
 
   categories:
     name: 6. Two categories in one job (passes)
@@ -98,11 +109,13 @@ jobs:
           ballerina-version: 2201.13.5
           paths: test/projects/multi/orders
           category: orders
+          artifacts: sarif
       - name: Scan payments
         uses: CharanaManawathilake/scan-ballerina@main
         with:
           paths: test/projects/multi/payments
           category: payments
+          artifacts: sarif
 
   fail-on-medium-low-findings:
     name: 7a. Fail on medium, low findings only (passes)
@@ -114,6 +127,8 @@ jobs:
         with:
           ballerina-version: 2201.13.5
           paths: test/projects/single
+          category: low-only
+          artifacts: sarif
           fail-on-severity: medium
 
   fail-on-medium-medium-finding:
@@ -121,11 +136,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # The SARIF file is still saved when the gate fails.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@main
         with:
           ballerina-version: 2201.13.5
           paths: test/projects/secrets
+          category: medium
+          artifacts: sarif
           fail-on-severity: medium
 
   max-findings-without-gate:
@@ -139,6 +157,8 @@ jobs:
         with:
           ballerina-version: 2201.13.5
           paths: test/projects/single
+          category: max-findings
+          artifacts: sarif
           max-findings: 1
 
   severity-and-max-findings-at-limit:
@@ -152,6 +172,8 @@ jobs:
         with:
           ballerina-version: 2201.13.5
           paths: test/projects/single
+          category: at-limit
+          artifacts: sarif
           fail-on-severity: low
           max-findings: 6
 
@@ -166,6 +188,8 @@ jobs:
         with:
           ballerina-version: 2201.13.5
           paths: test/projects/single
+          category: over-limit
+          artifacts: sarif
           fail-on-severity: low
           max-findings: 5
 
@@ -179,6 +203,8 @@ jobs:
         with:
           ballerina-version: 2201.13.5
           paths: test/projects/single
+          category: annotated
+          artifacts: sarif
           annotations: true
 
   annotations-off:
@@ -191,6 +217,9 @@ jobs:
         with:
           ballerina-version: 2201.13.5
           paths: test/projects/single
+          category: plain
+          artifacts: sarif
+          annotations: false
 
   job-summary-on:
     name: 11a. Job summary on (passes, with a summary)
@@ -202,6 +231,8 @@ jobs:
         with:
           ballerina-version: 2201.13.5
           paths: test/projects/single
+          category: with-summary
+          artifacts: sarif
 
   job-summary-off:
     name: 11b. Job summary off (passes, no summary)
@@ -213,4 +244,46 @@ jobs:
         with:
           ballerina-version: 2201.13.5
           paths: test/projects/single
+          category: without-summary
+          artifacts: sarif
           job-summary: false
+
+  artifacts-both:
+    name: 12a. Save the SARIF file and the Ballerina reports (passes, with an artifact)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The artifact holds artifacts-both.sarif and a scan_results.json for each of the 2 packages.
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/multi
+          category: artifacts-both
+          artifacts: sarif,ballerina
+
+  artifacts-empty:
+    name: 12b. Empty artifacts (passes, no artifact)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/multi/orders
+          category: artifacts-empty
+          artifacts: ''
+
+  artifacts-unknown:
+    name: 12c. Unknown report in artifacts (fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@main
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/multi/orders
+          category: artifacts-unknown
+          artifacts: sarif,html
