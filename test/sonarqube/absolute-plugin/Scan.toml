@@ -1,3 +1,0 @@
-[[platform]]
-name = "sonarqube"
-path = "/opt/sonar/sonar-platform-plugin.jar"
