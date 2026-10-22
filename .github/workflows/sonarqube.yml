@@ -4,22 +4,22 @@ on:
   push:
     branches:
       - main
-  # Pull requests run this scan only when they change the root package or this workflow.
+  # Pull requests run this scan only when they change the package or this workflow.
   pull_request:
     paths:
-      - "*.bal"
-      - Ballerina.toml
+      - marketplace/**
       - .github/workflows/sonarqube.yml
   workflow_dispatch:
 
 permissions:
   contents: read
 
-# Scans the package at the repository root, with the Marketplace release of the action, and reports
-# to the SonarQube server in the SONAR_HOST_URL variable with the SONAR_TOKEN secret. The token
-# needs the Execute Analysis and Create Projects permissions so that the project key is created on
-# its first analysis, and the
-# server needs the Ballerina plugin installed.
+# Scans the package in marketplace, with the Marketplace release of the action, and reports to the
+# SonarQube server in the SONAR_HOST_URL variable with the SONAR_TOKEN secret. The token needs the
+# Execute Analysis and Create Projects permissions so that the project key is created on its first
+# analysis, and the server needs the Ballerina plugin installed.
+# The package is not at the repository root: Ballerina 2201.12 does not load a package inside
+# another package, such as order-service and the test packages.
 
 jobs:
   scan:
@@ -35,10 +35,7 @@ jobs:
         uses: ballerina-platform/scan-ballerina@v0
         with:
           ballerina-version: 2201.13.5
-          # The test packages and the order service are scanned by the other workflows.
-          exclude-paths: |
-            test
-            order-service
+          paths: marketplace
           artifacts: true
           platforms: sonarqube
           platform-config: |

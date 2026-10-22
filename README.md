@@ -10,7 +10,7 @@ The test workflows use the action from the [`support-scan-tool-0.11.0`](https://
 | [`code-scanning.yml`](.github/workflows/code-scanning.yml) | Case 3, the upload to code scanning, on `main` and on every pull request |
 | [`sonarqube-settings.yml`](.github/workflows/sonarqube-settings.yml) | One job per SonarQube settings case, on `main` and on pull requests that change `test/` |
 | [`scan.yml`](.github/workflows/scan.yml) | The order service scan on Ballerina 2201.12.0, uploaded to code scanning, on `main` and on every pull request to `main` |
-| [`sonarqube.yml`](.github/workflows/sonarqube.yml) | The package at the repository root, reported to SonarQube with the Marketplace release `ballerina-platform/scan-ballerina@v0` |
+| [`sonarqube.yml`](.github/workflows/sonarqube.yml) | The package in [`marketplace`](marketplace), reported to SonarQube with the Marketplace release `ballerina-platform/scan-ballerina@v0`. It is not at the repository root, since Ballerina 2201.12 does not load a package inside another package |
 
 Each job is one case, so its result, annotations and job summary show on their own.
 
@@ -90,7 +90,7 @@ Every job uses its job ID as the category. The jobs with invalid settings point 
 
 ### Setting up the SonarQube server
 
-The jobs with valid settings, and the root package's SonarQube workflow, read the server URL from a repository variable and the token from a repository secret. Set both in the repository's **Settings > Secrets and variables > Actions**:
+The jobs with valid settings, and the `marketplace` package's SonarQube workflow, read the server URL from a repository variable and the token from a repository secret. Set both in the repository's **Settings > Secrets and variables > Actions**:
 
 | Name | Where | Value |
 | --- | --- | --- |
@@ -104,7 +104,7 @@ gh variable set SONAR_HOST_URL --body "https://sonarqube.mycompany.com"
 gh secret set SONAR_TOKEN
 ```
 
-The server needs the Ballerina plugin installed. Create the token in SonarQube under **My Account > Security**, for a user that has the **Execute Analysis** and **Create Projects** permissions, so that each project key is created on its first analysis. The jobs create the projects `remote-plugin`, `orders`, `properties-key`, `override-key`, `platform-key` and `oldest-tool`, and the root package's workflow creates `test-scan-ballerina`.
+The server needs the Ballerina plugin installed. Create the token in SonarQube under **My Account > Security**, for a user that has the **Execute Analysis** and **Create Projects** permissions, so that each project key is created on its first analysis. The jobs create the projects `remote-plugin`, `orders`, `properties-key`, `override-key`, `platform-key` and `oldest-tool`, and the `marketplace` package's workflow creates `test-scan-ballerina`.
 
 Do not set `UNSET_SONAR_TOKEN`: the "Token from a secret that is not set" job needs it to be empty.
 
@@ -159,6 +159,6 @@ The pull requests show each case:
 | `test/projects/with-tests` | 2 low, 1 of them in `tests/` |
 | `test/projects/oldest` | 1 low, for Ballerina 2201.12.0 |
 | `test/projects/workspace` | A workspace of `billing` and `shipping`, 1 low each |
-| The package at the repository root | 6 low |
+| `marketplace` | 6 low |
 
 The packages in `test/sonarqube` each set up one SonarQube case, with a `Scan.toml` or a `sonar-project.properties` file.
