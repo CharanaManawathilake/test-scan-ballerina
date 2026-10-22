@@ -176,7 +176,7 @@ The pull requests show each case:
 | --- | --- | --- |
 | `demo-1` | New findings, with annotations and no upload | Blocked: code scanning waits for results that never come |
 | `demo-2` | No new findings | Passes |
-| `demo-3` | New findings, uploaded | Fails: the new alerts fail the **Ballerina Scan Tool** check |
+| `demo-3` | New findings, uploaded | Blocked: 2 new alerts. Both are warnings, and by default the **Ballerina Scan Tool** check fails only on errors, so the check passes while the ruleset blocks the merge |
 
 ## Test packages
 
