@@ -1,0 +1,44 @@
+name: Scan Ballerina
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Scans the order service on Ballerina 2201.12.0, with bal scan 0.11.0, which Ballerina Central
+# picks for it, and uploads the findings to GitHub code scanning.
+# On main, the gate allows 5 high findings. The gate counts every finding in the package, not only
+# new ones, so it is off for pull requests. A pull request is gated by code scanning instead: it
+# compares the findings with main, and the "Block new code scanning alerts" ruleset blocks the
+# merge when there are new alerts or no results.
+jobs:
+  scan:
+    name: Scan order service
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan order service
+        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        with:
+          ballerina-version: 2201.12.0
+          paths: order-service
+          category: order-service
+          exclude-tests: true
+          fail-on-severity: ${{ github.event_name == 'pull_request' && 'none' || 'high' }}
+          max-findings: 5
+          annotations: false
+          job-summary: true
+          artifacts: true
+          platforms: github-code-scanning

@@ -1,0 +1,33 @@
+name: Code scanning
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Case 3 of the Inputs workflow. It runs on every pull request, so code scanning gets results for
+# the bal-scan-test category on each one, as it does on main, and the "Block new code scanning
+# alerts" ruleset only waits on the order service scan.
+jobs:
+  code-scanning:
+    name: 3. Upload to GitHub code scanning (passes)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan and upload
+        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        with:
+          ballerina-version: 2201.13.5
+          paths: test/projects/single
+          platforms: github-code-scanning
+          category: bal-scan-test
+          artifacts: true
