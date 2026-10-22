@@ -134,9 +134,41 @@ GitHub does not pass secrets to workflows run from pull requests opened from for
 
 ## Order service and pull requests
 
-[`order-service`](order-service) is the order service of [demo-scan-ballerina](https://github.com/CharanaManawathilake/demo-scan-ballerina), set to Ballerina 2201.12.0. [`scan.yml`](.github/workflows/scan.yml) scans it with `bal scan` 0.11.0, which Ballerina Central picks for Ballerina 2201.12.0, and uploads the findings to code scanning with the category `order-service`. On `main`, the gate fails the job when more than 5 high findings are counted. On pull requests the gate is off, and the **Block new code scanning alerts** ruleset blocks the merge when code scanning reports new alerts, or no results.
+[`order-service`](order-service) is the order service of [demo-scan-ballerina](https://github.com/CharanaManawathilake/demo-scan-ballerina), set to Ballerina 2201.12.0. [`scan.yml`](.github/workflows/scan.yml) scans it with `bal scan` 0.11.0, which Ballerina Central picks for Ballerina 2201.12.0, and uploads the findings to code scanning with the category `order-service`. On `main`, the gate fails the job when more than 10 medium findings are counted, and `main` has 18. On pull requests the gate is off, and the **Block new code scanning alerts** ruleset blocks the merge when code scanning reports new alerts, or no results.
 
-`bal scan` 0.11.0 has no rule severities, so a bug is high, a vulnerability is medium and a code smell is low. It has fewer rules than 0.12.0, so it reports fewer findings than the demo repository.
+`bal scan` 0.11.0 has no rule severities, so a bug is high, a vulnerability is medium and a code smell is low. It reports 31 findings, 0 high, 18 medium and 13 low. It has no `ballerina:13`, `ballerina:14` or `ballerina/log:2` rule, so it reports 3 fewer findings than `bal scan` 0.12.0 in the demo repository:
+
+| File | Severity | Rule | Issue |
+| --- | --- | --- | --- |
+| `auth.bal` | Medium | `ballerina/jwt:1` | Customer tokens are issued with the `none` algorithm |
+| `auth.bal` | Medium | `ballerina/jwt:2` | Customer tokens are validated without a signature configuration |
+| `auth.bal` | Medium | `ballerina/jwt:3` | Customer tokens are validated without checking the issuer and audience |
+| `auth.bal` | Medium | `ballerina/jwt:4` | Customer tokens expire after 30 days |
+| `auth.bal` | Medium | `ballerina/jwt:5` | A clock skew of one hour |
+| `auth.bal` | Medium | `ballerina/jwt:6` | TLS validation is turned off for the partner JWKS endpoint |
+| `auth.bal` | Medium | `ballerina/jwt:7` | A token is decoded without being verified |
+| `auth.bal` | Low | `ballerina:3` | `issueToken` is public but not isolated |
+| `payments.bal` | Medium | `ballerina/crypto:1` | Card numbers are encrypted with AES in ECB mode |
+| `payments.bal` | Medium | `ballerina/crypto:2` | Passwords are hashed with a BCrypt work factor of 4 |
+| `payments.bal` | Medium | `ballerina/crypto:3` | Receipts are encrypted with a fixed AES-GCM initialization vector |
+| `payments.bal` | Medium | `ballerina/io:2` | The payment gateway key is printed to the console |
+| `payments.bal` | Medium | `ballerina/log:1` | The payment gateway key is logged |
+| `reports.bal` | Medium | `ballerina/os:3` | A report is generated through `sh -c` |
+| `reports.bal` | Medium | `ballerina/os:4` | `sh` and `tar` are resolved through `PATH` (2 findings) |
+| `service.bal` | Medium | `ballerina/http:1` | A `default` resource accepts every method and path |
+| `service.bal` | Medium | `ballerina/http:2` | CORS allows every origin with credentials |
+| `service.bal` | Medium | `ballerina/http:4` | Checkout redirects to a URL taken from the request |
+| `pricing.bal` | Low | `ballerina:1` | `checkpanic` instead of `check` |
+| `pricing.bal` | Low | `ballerina:2` | The `currency` parameter is not used |
+| `pricing.bal` | Low | `ballerina:3` | `orderTotal` is public but not isolated |
+| `pricing.bal` | Low | `ballerina:4` | Public methods of `DiscountCalculator` are not isolated (2 findings) |
+| `pricing.bal` | Low | `ballerina:5` | `DiscountCalculator` is public but not isolated |
+| `pricing.bal` | Low | `ballerina:6` | The `PaymentGateway` object type is public but not isolated |
+| `pricing.bal` | Low | `ballerina:7` | A condition that is always true |
+| `pricing.bal` | Low | `ballerina:8` | A condition that is always false |
+| `pricing.bal` | Low | `ballerina:10` | A variable assigned to itself |
+| `pricing.bal` | Low | `ballerina:11` | The private field `campaignCode` is never used |
+| `pricing.bal` | Low | `ballerina:12` | The range `7 ... 1` is empty |
 
 The pull requests show each case:
 
