@@ -3,3 +3,4 @@ target/
 Dependencies.toml
 .scannerwork/
 ballerina-static-code-analysis-results.json
+!test/projects/locked/Dependencies.toml

@@ -38,6 +38,9 @@ permissions:
 # The cases from 19 on cover Ballerina 2201.12 and bal scan 0.11.1, the oldest supported pair:
 #   test/projects/oldest                    1 low (ballerina:1), for Ballerina 2201.12.0
 #   test/projects/workspace                 a workspace of billing and shipping, 1 low each
+# The cases from 22 on cover the bal build that locks the dependencies before a scan:
+#   test/projects/locked                    1 low (ballerina:1), with a committed Dependencies.toml
+#   test/projects/broken                    does not compile
 
 jobs:
   compatible-versions:
@@ -46,7 +49,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.13.0
@@ -62,7 +65,7 @@ jobs:
       # bal scan 0.12.0 needs Ballerina 2201.13.0 or later. Both are given, so the pair fails with
       # the inputs, before Ballerina or the scan tool is installed.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.12.0
           tool-version: 0.12.0
@@ -79,7 +82,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -93,7 +96,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -110,7 +113,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan orders
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -118,7 +121,7 @@ jobs:
           category: orders
           artifacts: true
       - name: Scan payments
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           paths: test/projects/multi/payments
           category: payments
@@ -130,7 +133,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -146,7 +149,7 @@ jobs:
       - uses: actions/checkout@v4
       # The SARIF file is still saved when the gate fails.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -161,7 +164,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -177,7 +180,7 @@ jobs:
       - uses: actions/checkout@v4
       # fail-on-severity is not case sensitive.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -193,7 +196,7 @@ jobs:
       - uses: actions/checkout@v4
       # The gate is off, so max-findings has no effect, even with 6 findings.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -209,7 +212,7 @@ jobs:
       - uses: actions/checkout@v4
       # 6 findings, and 6 are allowed.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -226,7 +229,7 @@ jobs:
       - uses: actions/checkout@v4
       # 6 findings, and 5 are allowed.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -242,7 +245,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -257,7 +260,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -272,7 +275,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -287,7 +290,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -303,7 +306,7 @@ jobs:
       - uses: actions/checkout@v4
       # The artifact holds artifacts-true.sarif, the merged SARIF file of the 2 packages, only.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -317,7 +320,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -331,7 +334,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -345,7 +348,7 @@ jobs:
       - uses: actions/checkout@v4
       # sarif was accepted before artifacts became true or false.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -360,7 +363,7 @@ jobs:
       - uses: actions/checkout@v4
       # Only ballerina:1 and ballerina:10 are reported, so the 2 findings fit max-findings.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -378,7 +381,7 @@ jobs:
       - uses: actions/checkout@v4
       # ballerina:1 and ballerina:10 are left out, so the 4 other findings fit max-findings.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -396,7 +399,7 @@ jobs:
       - uses: actions/checkout@v4
       # The same scan as 7b, which fails without exclude-rules.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -412,7 +415,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -428,7 +431,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -444,7 +447,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -460,7 +463,7 @@ jobs:
       - uses: actions/checkout@v4
       # exclude-tests is not set. The finding in tests/ is dropped, so 1 finding fits max-findings.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -477,7 +480,7 @@ jobs:
       - uses: actions/checkout@v4
       # The finding in tests/ is counted, so 2 findings are over max-findings.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -494,7 +497,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -510,7 +513,7 @@ jobs:
       - uses: actions/checkout@v4
       # legacy is two directories below services, so test/projects/*/legacy does not match it.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -525,7 +528,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -541,7 +544,7 @@ jobs:
       - uses: actions/checkout@v4
       # payments is still scanned, but its findings are dropped, so the 1 finding in orders fits max-findings.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -558,7 +561,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -573,7 +576,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -588,7 +591,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -602,7 +605,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -616,7 +619,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -630,7 +633,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -644,7 +647,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -659,7 +662,7 @@ jobs:
       - uses: actions/checkout@v4
       # Installs the latest Ballerina and the latest scan tool Ballerina Central picks for it.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           paths: test/projects/single
           category: default-versions
@@ -671,7 +674,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: '2201 13'
           tool-version: '0.12'
@@ -693,7 +696,7 @@ jobs:
       # Central, which picks 0.11.0, so 0.11.1 is pinned. Its SARIF file has no rule
       # kinds, so the action takes them from the levels.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.12.0
           tool-version: 0.11.1
@@ -707,7 +710,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.12.0
           tool-version: 0.11.1
@@ -722,7 +725,7 @@ jobs:
       - uses: actions/checkout@v4
       # A scan tool runs on the Ballerina it was built with and later ones.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -737,7 +740,7 @@ jobs:
       - uses: actions/checkout@v4
       # Fails with the inputs: bal scan 0.11.0 and later need Ballerina 2201.12.0 or later.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.11.0
           tool-version: 0.11.1
@@ -752,7 +755,7 @@ jobs:
       - uses: actions/checkout@v4
       # Fails with the inputs: the oldest supported version is 0.11.0.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.12.0
           tool-version: 0.10.0
@@ -773,7 +776,7 @@ jobs:
       # No ballerina-version is given and bal scan 0.11.1 runs on the Ballerina on the path, so
       # nothing else is installed.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           tool-version: 0.11.1
           paths: test/projects/oldest
@@ -792,7 +795,7 @@ jobs:
           github-token: ${{ github.token }}
       # bal scan 0.13.0 needs Ballerina 2201.13.2 or later, so the one on the path is not used.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           tool-version: 0.13.0
           paths: test/projects/single
@@ -805,7 +808,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           paths: test/projects/workspace
           category: workspace-latest
@@ -819,7 +822,7 @@ jobs:
       # Fails before anything is scanned: one error names the workspace, and one says that this run
       # uses Ballerina 2201.12.0, which does not support workspaces. oldest is not scanned either.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.12.0
           tool-version: 0.11.1
@@ -834,7 +837,7 @@ jobs:
       - uses: actions/checkout@v4
       # Ballerina 2201.13.5 has workspaces, so the error names bal scan 0.11.1 instead.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.13.5
           tool-version: 0.11.1
@@ -849,11 +852,59 @@ jobs:
       - uses: actions/checkout@v4
       # The fix the error in 21b suggests.
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
         with:
           ballerina-version: 2201.12.0
           tool-version: 0.11.1
           paths: test/projects/oldest, test/projects/workspace
           exclude-paths: test/projects/workspace
           category: workspace-excluded
+          artifacts: true
+
+  build-without-lock:
+    name: 22a. Package without Dependencies.toml (passes, built first)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
+        with:
+          ballerina-version: 2201.13.5
+          tool-version: 0.11.1
+          paths: test/projects/single
+          category: build-without-lock
+          artifacts: true
+      - name: Check that bal build locked the dependencies
+        run: test -f test/projects/single/Dependencies.toml && test -d test/projects/single/target/bin
+
+  locked-dependencies:
+    name: 22b. Package with a committed Dependencies.toml (passes, not built)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Its Dependencies.toml was written by Ballerina 2201.12.12, so that version runs it unchanged.
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
+        with:
+          ballerina-version: 2201.12.12
+          tool-version: 0.11.1
+          paths: test/projects/locked
+          category: locked-dependencies
+          artifacts: true
+      # bal build writes target/bin and bal scan does not.
+      - name: Check that bal build did not run
+        run: test ! -d test/projects/locked/target/bin && git diff --exit-code test/projects/locked
+
+  build-fails:
+    name: 22c. Package that does not compile (fails, bal build fails)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan
+        uses: CharanaManawathilake/scan-ballerina@build-before-scan
+        with:
+          ballerina-version: 2201.13.5
+          tool-version: 0.11.1
+          paths: test/projects/broken
+          category: build-fails
           artifacts: true
