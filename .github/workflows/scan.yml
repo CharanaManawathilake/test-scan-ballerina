@@ -9,12 +9,17 @@ on:
       - main
   workflow_dispatch:
 
+# Test run of bal scan 0.11.1, published only to staging Central so far. The action still asks
+# production Central for versions, so every scan names its tool-version.
+env:
+  BALLERINA_STAGE_CENTRAL: "true"
+
 permissions:
   contents: read
 
-# Scans the order service on Ballerina 2201.12.0, with bal scan 0.11.0, which Ballerina Central
-# picks for it, and uploads the findings to GitHub code scanning.
-# bal scan 0.11.0 has no rule severities: a bug is high, a vulnerability medium and a code smell low.
+# Scans the order service on Ballerina 2201.12.0, with bal scan 0.11.1 from staging Central,
+# and uploads the findings to GitHub code scanning.
+# bal scan 0.11.1 has no rule severities: a bug is high, a vulnerability medium and a code smell low.
 # On main, the gate allows 10 medium findings. main has 18, so the job fails. The gate counts every
 # finding in the package, not only new ones, so it is off for pull requests. A pull request is
 # gated by code scanning instead: it compares the findings with main, and the "Block new code
@@ -34,6 +39,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.12.0
+          tool-version: 0.11.1
           paths: order-service
           category: order-service
           exclude-tests: true

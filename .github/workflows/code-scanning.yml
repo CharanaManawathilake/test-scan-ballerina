@@ -7,6 +7,11 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Test run of bal scan 0.11.1, published only to staging Central so far. The action still asks
+# production Central for versions, so every scan names its tool-version.
+env:
+  BALLERINA_STAGE_CENTRAL: "true"
+
 permissions:
   contents: read
 
@@ -27,6 +32,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/single
           platforms: github-code-scanning
           category: bal-scan-test

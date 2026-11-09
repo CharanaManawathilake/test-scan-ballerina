@@ -12,6 +12,11 @@ on:
       - .github/workflows/inputs.yml
   workflow_dispatch:
 
+# Test run of bal scan 0.11.1, published only to staging Central so far. The action still asks
+# production Central for versions, so every scan names its tool-version.
+env:
+  BALLERINA_STAGE_CENTRAL: "true"
+
 permissions:
   contents: read
 
@@ -30,7 +35,7 @@ permissions:
 #   single      ballerina:1, ballerina:2, ballerina:3, ballerina:7, ballerina:10, ballerina:11
 #   secrets     ballerina:14
 #   with-tests  ballerina:1 in main.bal, ballerina:1 in tests/main_test.bal
-# The cases from 19 on cover Ballerina 2201.12 and bal scan 0.11.0, the oldest supported pair:
+# The cases from 19 on cover Ballerina 2201.12 and bal scan 0.11.1, the oldest supported pair:
 #   test/projects/oldest                    1 low (ballerina:1), for Ballerina 2201.12.0
 #   test/projects/workspace                 a workspace of billing and shipping, 1 low each
 
@@ -44,7 +49,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
-          tool-version: 0.12.0
+          tool-version: 0.13.0
           paths: test/projects/single
           category: compatible-versions
           artifacts: true
@@ -77,6 +82,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/multi
           category: single-path
           artifacts: true
@@ -90,6 +96,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: |
             test/projects/multi
             test/projects/services
@@ -106,6 +113,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/multi/orders
           category: orders
           artifacts: true
@@ -125,6 +133,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/single
           category: low-only
           artifacts: true
@@ -140,6 +149,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/secrets
           category: medium
           artifacts: true
@@ -154,6 +164,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/secrets
           category: high-only
           artifacts: true
@@ -169,6 +180,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/secrets
           category: medium-uppercase
           artifacts: true
@@ -184,6 +196,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/single
           category: max-findings
           artifacts: true
@@ -199,6 +212,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/single
           category: at-limit
           artifacts: true
@@ -215,6 +229,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/single
           category: over-limit
           artifacts: true
@@ -230,6 +245,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/single
           category: annotated
           artifacts: true
@@ -244,6 +260,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/single
           category: plain
           artifacts: true
@@ -258,6 +275,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/single
           category: with-summary
           artifacts: true
@@ -272,6 +290,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/single
           category: without-summary
           artifacts: true
@@ -287,6 +306,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/multi
           category: artifacts-true
           artifacts: true
@@ -300,6 +320,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/multi/orders
           category: artifacts-false
           artifacts: false
@@ -313,6 +334,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/multi/orders
           category: artifacts-default
 
@@ -326,6 +348,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/multi/orders
           category: artifacts-invalid
           artifacts: sarif
@@ -340,6 +363,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/single
           category: include-rules
           artifacts: true
@@ -357,6 +381,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/single
           category: exclude-rules
           artifacts: true
@@ -374,6 +399,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/secrets
           category: exclude-medium-rule
           artifacts: true
@@ -389,6 +415,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/single
           category: include-rule-matching-nothing
           artifacts: true
@@ -404,6 +431,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/single
           category: include-and-exclude-rules
           artifacts: true
@@ -419,6 +447,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/single
           category: invalid-rule-id
           artifacts: true
@@ -434,6 +463,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/with-tests
           category: exclude-tests-default
           artifacts: true
@@ -450,6 +480,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/with-tests
           category: exclude-tests-off
           artifacts: true
@@ -466,6 +497,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/with-tests
           category: exclude-tests-invalid
           artifacts: true
@@ -481,6 +513,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/services
           exclude-paths: test/projects/*/legacy
           category: exclude-paths-single-star
@@ -495,6 +528,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/services
           exclude-paths: test/projects/**/legacy
           category: exclude-paths-double-star
@@ -510,6 +544,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/multi
           exclude-paths: test/projects/multi/payments/*.bal
           category: exclude-paths-files
@@ -526,6 +561,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/multi
           exclude-paths: test/projects/multi
           category: exclude-paths-everything
@@ -540,6 +576,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/multi
           exclude-paths: /test/projects/multi/payments
           category: exclude-paths-absolute
@@ -554,6 +591,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/multi/orders,test/projects/services/api
           category: comma-separated-paths
           artifacts: true
@@ -567,6 +605,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: .github
           category: path-without-packages
           artifacts: true
@@ -580,6 +619,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/missing
           category: path-missing
           artifacts: true
@@ -593,6 +633,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: test/projects/single/main.bal
           category: path-file
           artifacts: true
@@ -606,6 +647,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
+          tool-version: 0.11.1
           paths: ..
           category: path-outside-repository
           artifacts: true
@@ -643,22 +685,24 @@ jobs:
           job-summary: 'no'
 
   oldest-versions:
-    name: 19a. Ballerina 2201.12.0 with the latest compatible scan tool (passes, bal scan 0.11.0)
+    name: 19a. Ballerina 2201.12.0 with bal scan 0.11.1 (passes)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Ballerina Central picks bal scan 0.11.0 for Ballerina 2201.12. Its SARIF file has no rule
+      # Staging Central picks bal scan 0.11.1 for Ballerina 2201.12, but the action asks production
+      # Central, which picks 0.11.0, so 0.11.1 is pinned. Its SARIF file has no rule
       # kinds, so the action takes them from the levels.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.12.0
+          tool-version: 0.11.1
           paths: test/projects/oldest
           category: oldest-versions
           artifacts: true
 
   oldest-tool-version:
-    name: 19b. Ballerina 2201.12.0 with tool-version 0.11.0 (passes)
+    name: 19b. Ballerina 2201.12.0 with tool-version 0.11.1 (passes)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -666,13 +710,13 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.12.0
-          tool-version: 0.11.0
+          tool-version: 0.11.1
           paths: test/projects/oldest
           category: oldest-tool-version
           artifacts: true
 
   old-tool-newer-ballerina:
-    name: 19c. Ballerina 2201.13.5 with tool-version 0.11.0 (passes, 6 findings)
+    name: 19c. Ballerina 2201.13.5 with tool-version 0.11.1 (passes, 6 findings)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -681,7 +725,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
-          tool-version: 0.11.0
+          tool-version: 0.11.1
           paths: test/projects/single
           category: old-tool-newer-ballerina
           artifacts: true
@@ -696,6 +740,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.11.0
+          tool-version: 0.11.1
           paths: test/projects/oldest
           category: ballerina-below-minimum
           artifacts: true
@@ -716,7 +761,7 @@ jobs:
           artifacts: true
 
   ballerina-on-path:
-    name: 20a. Ballerina 2201.12.0 already on the path (passes, uses it with bal scan 0.11.0)
+    name: 20a. Ballerina 2201.12.0 already on the path (passes, uses it with bal scan 0.11.1)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -725,17 +770,18 @@ jobs:
         with:
           version: 2201.12.0
           github-token: ${{ github.token }}
-      # ballerina-version is latest and no tool-version is given, so any Ballerina that runs a
-      # supported scan tool is used, and nothing else is installed.
+      # No ballerina-version is given and bal scan 0.11.1 runs on the Ballerina on the path, so
+      # nothing else is installed.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
+          tool-version: 0.11.1
           paths: test/projects/oldest
           category: ballerina-on-path
           artifacts: true
 
   ballerina-on-path-too-old:
-    name: 20b. Ballerina 2201.12.0 on the path with tool-version 0.12.0 (passes, installs the latest Ballerina)
+    name: 20b. Ballerina 2201.12.0 on the path with tool-version 0.13.0 (passes, installs the latest Ballerina)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -744,11 +790,11 @@ jobs:
         with:
           version: 2201.12.0
           github-token: ${{ github.token }}
-      # bal scan 0.12.0 needs Ballerina 2201.13.0 or later, so the one on the path is not used.
+      # bal scan 0.13.0 needs Ballerina 2201.13.2 or later, so the one on the path is not used.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
-          tool-version: 0.12.0
+          tool-version: 0.13.0
           paths: test/projects/single
           category: ballerina-on-path-too-old
           artifacts: true
@@ -776,21 +822,22 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.12.0
+          tool-version: 0.11.1
           paths: test/projects/oldest, test/projects/workspace
           category: workspace-ballerina-12
           artifacts: true
 
   workspace-tool-0-11:
-    name: 21c. Workspace with bal scan 0.11.0 on Ballerina 2201.13.5 (fails, bal scan 0.11.0 cannot scan workspaces)
+    name: 21c. Workspace with bal scan 0.11.1 on Ballerina 2201.13.5 (fails, bal scan 0.11.1 cannot scan workspaces)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Ballerina 2201.13.5 has workspaces, so the error names bal scan 0.11.0 instead.
+      # Ballerina 2201.13.5 has workspaces, so the error names bal scan 0.11.1 instead.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.13.5
-          tool-version: 0.11.0
+          tool-version: 0.11.1
           paths: test/projects/workspace
           category: workspace-tool-0-11
           artifacts: true
@@ -805,6 +852,7 @@ jobs:
         uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
         with:
           ballerina-version: 2201.12.0
+          tool-version: 0.11.1
           paths: test/projects/oldest, test/projects/workspace
           exclude-paths: test/projects/workspace
           category: workspace-excluded
