@@ -249,7 +249,7 @@ jobs:
         with:
           ballerina-version: 2201.13.5
           packages: test/projects/single
-      # The gate is off, so max-findings has no effect, even with 6 findings.
+      # The gate is off, so fail-on-count has no effect, even with 6 findings.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -258,7 +258,7 @@ jobs:
           paths: test/projects/single
           category: max-findings
           artifacts: true
-          max-findings: 1
+          fail-on-count: 2
 
   severity-and-max-findings-at-limit:
     name: 9a. Fail on low with max findings at the limit (passes)
@@ -270,7 +270,7 @@ jobs:
         with:
           ballerina-version: 2201.13.5
           packages: test/projects/single
-      # 6 findings, and 6 are allowed.
+      # 6 findings, and the gate fails from 7.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -280,7 +280,7 @@ jobs:
           category: at-limit
           artifacts: true
           fail-on-severity: low
-          max-findings: 6
+          fail-on-count: 7
 
   severity-and-max-findings-over-limit:
     name: 9b. Fail on low with max findings over the limit (fails)
@@ -292,7 +292,7 @@ jobs:
         with:
           ballerina-version: 2201.13.5
           packages: test/projects/single
-      # 6 findings, and 5 are allowed.
+      # 6 findings, and the gate fails from 6.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -302,7 +302,7 @@ jobs:
           category: over-limit
           artifacts: true
           fail-on-severity: low
-          max-findings: 5
+          fail-on-count: 6
 
   annotations-on:
     name: 10a. Annotations on (passes, with annotations)
@@ -473,7 +473,7 @@ jobs:
         with:
           ballerina-version: 2201.13.5
           packages: test/projects/single
-      # Only ballerina:1 and ballerina:10 are reported, so the 2 findings fit max-findings.
+      # Only ballerina:1 and ballerina:10 are reported, so the 2 findings stay under fail-on-count.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -484,7 +484,7 @@ jobs:
           artifacts: true
           include-rules: ballerina:1,ballerina:10
           fail-on-severity: low
-          max-findings: 2
+          fail-on-count: 3
 
   exclude-rules:
     name: 13b. Exclude rules (passes, 4 of 6 findings)
@@ -496,7 +496,7 @@ jobs:
         with:
           ballerina-version: 2201.13.5
           packages: test/projects/single
-      # ballerina:1 and ballerina:10 are left out, so the 4 other findings fit max-findings.
+      # ballerina:1 and ballerina:10 are left out, so the 4 other findings stay under fail-on-count.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -507,7 +507,7 @@ jobs:
           artifacts: true
           exclude-rules: ballerina:1,ballerina:10
           fail-on-severity: low
-          max-findings: 4
+          fail-on-count: 5
 
   exclude-medium-rule:
     name: 13c. Exclude the rule behind the medium finding (passes, no findings)
@@ -603,7 +603,7 @@ jobs:
         with:
           ballerina-version: 2201.13.5
           packages: test/projects/with-tests
-      # exclude-tests is not set. The finding in tests/ is dropped, so 1 finding fits max-findings.
+      # exclude-tests is not set. The finding in tests/ is dropped, so 1 finding stays under fail-on-count.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -613,7 +613,7 @@ jobs:
           category: exclude-tests-default
           artifacts: true
           fail-on-severity: low
-          max-findings: 1
+          fail-on-count: 2
 
   exclude-tests-off:
     name: 14b. Keep the findings in tests (fails, 2 findings)
@@ -625,7 +625,7 @@ jobs:
         with:
           ballerina-version: 2201.13.5
           packages: test/projects/with-tests
-      # The finding in tests/ is counted, so 2 findings are over max-findings.
+      # The finding in tests/ is counted, so 2 findings reach fail-on-count.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -636,7 +636,7 @@ jobs:
           artifacts: true
           exclude-tests: false
           fail-on-severity: low
-          max-findings: 1
+          fail-on-count: 2
 
   exclude-tests-invalid:
     name: 14c. exclude-tests that is not true or false (fails)
@@ -715,7 +715,7 @@ jobs:
           packages: |
             test/projects/multi/orders
             test/projects/multi/payments
-      # payments is still scanned, but its findings are dropped, so the 1 finding in orders fits max-findings.
+      # payments is still scanned, but its findings are dropped, so the 1 finding in orders stays under fail-on-count.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -726,7 +726,7 @@ jobs:
           category: exclude-paths-files
           artifacts: true
           fail-on-severity: low
-          max-findings: 1
+          fail-on-count: 2
 
   exclude-paths-everything:
     name: 15d. Exclude every package (passes, skipped with a warning)
@@ -883,7 +883,7 @@ jobs:
           category: invalid-inputs
           artifacts: true
           fail-on-severity: critical
-          max-findings: '-1'
+          fail-on-count: '-1'
           annotations: 'yes'
           job-summary: 'no'
 
