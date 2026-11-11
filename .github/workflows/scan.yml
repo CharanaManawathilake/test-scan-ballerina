@@ -9,15 +9,10 @@ on:
       - main
   workflow_dispatch:
 
-# Test run of bal scan 0.11.1, published only to staging Central so far. The action still asks
-# production Central for versions, so every scan names its tool-version.
-env:
-  BALLERINA_STAGE_CENTRAL: "true"
-
 permissions:
   contents: read
 
-# Scans the order service on Ballerina 2201.12.0, with bal scan 0.11.1 from staging Central,
+# Scans the order service on Ballerina 2201.12.0, with bal scan 0.11.1,
 # and uploads the findings to GitHub code scanning.
 # bal scan 0.11.1 has no rule severities: a bug is high, a vulnerability medium and a code smell low.
 # On main, the gate allows 10 medium findings. main has 18, so the job fails. The gate counts every
