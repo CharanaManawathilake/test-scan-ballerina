@@ -28,6 +28,11 @@ jobs:
       actions: read
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/single
       - name: Scan and upload
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:

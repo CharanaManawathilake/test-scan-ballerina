@@ -1,0 +1,39 @@
+name: Build Ballerina packages
+description: >-
+  Runs bal build on each package or workspace, as a user does before scanning. bal scan scans only
+  packages whose dependencies are locked and already pulled, and the action does not build them.
+
+inputs:
+  ballerina-version:
+    description: Ballerina version to set up first. Empty uses the Ballerina already on the path.
+    required: false
+    default: ''
+  packages:
+    description: Newline or comma separated package or workspace directories to build.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Ballerina ${{ inputs.ballerina-version }}
+      if: inputs.ballerina-version != ''
+      uses: ballerina-platform/setup-ballerina@585120e3f0e540bf127376ee6e75d39e8ce6aaa4 # v1.1.5
+      with:
+        version: ${{ inputs.ballerina-version }}
+        github-token: ${{ github.token }}
+
+    - name: bal build
+      shell: bash
+      env:
+        PACKAGES: ${{ inputs.packages }}
+      run: |
+        set -euo pipefail
+        status=0
+        while IFS= read -r dir; do
+          dir="$(echo "$dir" | xargs)"
+          [ -n "$dir" ] || continue
+          echo "::group::bal build $dir"
+          (cd "$dir" && bal build) || { status=1; echo "::error::bal build failed in $dir"; }
+          echo "::endgroup::"
+        done < <(tr ',' '\n' <<< "$PACKAGES")
+        exit "$status"

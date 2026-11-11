@@ -38,9 +38,10 @@ permissions:
 # The cases from 19 on cover Ballerina 2201.12 and bal scan 0.11.1, the oldest supported pair:
 #   test/projects/oldest                    1 low (ballerina:1), for Ballerina 2201.12.0
 #   test/projects/workspace                 a workspace of billing and shipping, 1 low each
-# Each package commits its Dependencies.toml, since the action scans only packages whose
-# dependencies are locked. The cases from 22 on cover that check:
-#   test/projects/locked                    1 low (ballerina:1), never built by the action
+# bal scan scans only packages whose dependencies are locked and already pulled, and the action
+# does not build them, so each job runs bal build first, with .github/actions/bal-build, as a user
+# would. Each package also commits its Dependencies.toml. The cases from 22 on cover this:
+#   test/projects/locked                    1 low (ballerina:1), its committed lock left unchanged
 #   test/projects/broken                    does not compile
 
 jobs:
@@ -49,6 +50,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/single
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -63,6 +69,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.12.0
+          packages: test/projects/single
       # bal scan 0.12.0 needs Ballerina 2201.13.0 or later. Both are given, so the pair fails with
       # the inputs, before Ballerina or the scan tool is installed.
       - name: Scan
@@ -82,6 +93,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: |
+            test/projects/multi/orders
+            test/projects/multi/payments
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -96,6 +114,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: |
+            test/projects/multi/orders
+            test/projects/multi/payments
+            test/projects/services/api
+            test/projects/services/internal/legacy
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -113,6 +140,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: |
+            test/projects/multi/orders
+            test/projects/multi/payments
       - name: Scan orders
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -133,6 +167,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/single
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -148,6 +187,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/secrets
       # The SARIF file is still saved when the gate fails.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
@@ -164,6 +208,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/secrets
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -179,6 +228,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/secrets
       # fail-on-severity is not case sensitive.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
@@ -195,6 +249,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/single
       # The gate is off, so max-findings has no effect, even with 6 findings.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
@@ -211,6 +270,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/single
       # 6 findings, and 6 are allowed.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
@@ -228,6 +292,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/single
       # 6 findings, and 5 are allowed.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
@@ -245,6 +314,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/single
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -260,6 +334,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/single
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -275,6 +354,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/single
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -290,6 +374,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/single
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -305,6 +394,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: |
+            test/projects/multi/orders
+            test/projects/multi/payments
       # The artifact holds artifacts-true.sarif, the merged SARIF file of the 2 packages, only.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
@@ -320,6 +416,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/multi/orders
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -334,6 +435,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/multi/orders
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -347,6 +453,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/multi/orders
       # sarif was accepted before artifacts became true or false.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
@@ -362,6 +473,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/single
       # Only ballerina:1 and ballerina:10 are reported, so the 2 findings fit max-findings.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
@@ -380,6 +496,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/single
       # ballerina:1 and ballerina:10 are left out, so the 4 other findings fit max-findings.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
@@ -398,6 +519,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/secrets
       # The same scan as 7b, which fails without exclude-rules.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
@@ -415,6 +541,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/single
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -431,6 +562,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/single
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -447,6 +583,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/single
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -462,6 +603,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/with-tests
       # exclude-tests is not set. The finding in tests/ is dropped, so 1 finding fits max-findings.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
@@ -479,6 +625,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/with-tests
       # The finding in tests/ is counted, so 2 findings are over max-findings.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
@@ -497,6 +648,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/with-tests
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -512,6 +668,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: |
+            test/projects/services/api
+            test/projects/services/internal/legacy
       # legacy is two directories below services, so test/projects/*/legacy does not match it.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
@@ -528,6 +691,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: |
+            test/projects/services/api
+            test/projects/services/internal/legacy
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -543,6 +713,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: |
+            test/projects/multi/orders
+            test/projects/multi/payments
       # payments is still scanned, but its findings are dropped, so the 1 finding in orders fits max-findings.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
@@ -561,6 +738,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: |
+            test/projects/multi/orders
+            test/projects/multi/payments
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -576,6 +760,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: |
+            test/projects/multi/orders
+            test/projects/multi/payments
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -591,6 +782,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: |
+            test/projects/multi/orders
+            test/projects/services/api
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -661,7 +859,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Installs the latest Ballerina and the latest scan tool Ballerina Central picks for it.
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: latest
+          packages: test/projects/single
+      # Uses the latest Ballerina the build set up, and the latest scan tool Ballerina Central picks
+      # for it.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -693,6 +897,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.12.0
+          packages: test/projects/oldest
       # Staging Central picks bal scan 0.11.1 for Ballerina 2201.12, but the action asks production
       # Central, which picks 0.11.0, so 0.11.1 is pinned. Its SARIF file has no rule
       # kinds, so the action takes them from the levels.
@@ -710,6 +919,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.12.0
+          packages: test/projects/oldest
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -724,6 +938,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/single
       # A scan tool runs on the Ballerina it was built with and later ones.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
@@ -754,6 +973,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.12.0
+          packages: test/projects/oldest
       # Fails with the inputs: the oldest supported version is 0.11.0.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
@@ -774,6 +998,10 @@ jobs:
         with:
           version: 2201.12.0
           github-token: ${{ github.token }}
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          packages: test/projects/oldest
       # No ballerina-version is given and bal scan 0.11.1 runs on the Ballerina on the path, so
       # nothing else is installed.
       - name: Scan
@@ -794,6 +1022,11 @@ jobs:
         with:
           version: 2201.12.0
           github-token: ${{ github.token }}
+      # Built with the Ballerina 2201.12.0 on the path, as a user would before the action.
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          packages: test/projects/single
       # bal scan 0.13.0 needs Ballerina 2201.13.2 or later, so the one on the path is not used.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
@@ -808,6 +1041,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: latest
+          packages: test/projects/workspace
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
@@ -820,6 +1058,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Ballerina 2201.12.0 has no workspaces, so only the package is built.
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.12.0
+          packages: test/projects/oldest
       # Fails before anything is scanned: one error names the workspace, and one says that this run
       # uses Ballerina 2201.12.0, which does not support workspaces. oldest is not scanned either.
       - name: Scan
@@ -836,6 +1080,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/workspace
       # Ballerina 2201.13.5 has workspaces, so the error names bal scan 0.11.1 instead.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
@@ -851,6 +1100,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Ballerina 2201.12.0 has no workspaces, so only the package is built.
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.12.0
+          packages: test/projects/oldest
       # The fix the error in 21b suggests.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
@@ -867,6 +1122,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Not built, since bal build would write the Dependencies.toml again.
       - name: Remove the committed Dependencies.toml
         run: rm test/projects/single/Dependencies.toml
       - name: Scan
@@ -879,10 +1135,15 @@ jobs:
           artifacts: true
 
   locked-dependencies:
-    name: 22b. Package with a committed Dependencies.toml (passes, not built)
+    name: 22b. Package with a committed Dependencies.toml (passes, lock unchanged)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.12.12
+          packages: test/projects/locked
       # Its Dependencies.toml was written by Ballerina 2201.12.12, so that version runs it unchanged.
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
@@ -892,15 +1153,21 @@ jobs:
           paths: test/projects/locked
           category: locked-dependencies
           artifacts: true
-      # bal build writes target/bin and bal scan does not.
-      - name: Check that bal build did not run
-        run: test ! -d test/projects/locked/target/bin && git diff --exit-code test/projects/locked
+      - name: Check that the committed Dependencies.toml is unchanged
+        run: git diff --exit-code test/projects/locked
 
   scan-fails:
-    name: 22c. Package that does not compile (fails, bal scan fails)
+    name: 22c. Package that does not compile (fails, bal build and bal scan fail)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # bal build fails on the compile error but pulls the dependencies, so bal scan runs too.
+      - name: Build
+        continue-on-error: true
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/broken
       - name: Scan
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:

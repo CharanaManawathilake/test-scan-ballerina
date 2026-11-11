@@ -35,6 +35,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.12.0
+          packages: order-service
       - name: Scan order service
         uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
