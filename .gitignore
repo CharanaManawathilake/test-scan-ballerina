@@ -1,6 +1,5 @@
-# Ballerina build and scan output of the test packages
+# Ballerina build and scan output of the test packages. Dependencies.toml is kept, since bal scan
+# scans only packages whose dependencies are locked.
 target/
-Dependencies.toml
 .scannerwork/
 ballerina-static-code-analysis-results.json
-!test/projects/locked/Dependencies.toml
