@@ -19,6 +19,9 @@ permissions:
 # SonarQube server in the SONAR_HOST_URL variable with the SONAR_TOKEN secret, which needs the
 # Execute Analysis and Create Projects permissions so that each project key is created on its first
 # analysis. That server needs the Ballerina plugin installed.
+# bal scan scans only packages whose dependencies are locked and already pulled, so each package
+# commits its Dependencies.toml, and each job with valid settings runs bal build first, with
+# .github/actions/bal-build. The jobs with invalid settings fail before any package is scanned.
 # Each scan saves its SARIF file as an artifact named after its category, which is the job ID.
 #
 # The action resolves each setting of a package field by field: the package's item under packages,
@@ -37,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
           paths: test/sonarqube/absolute-plugin
           category: absolute-plugin
@@ -60,7 +63,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
           paths: test/sonarqube/http-plugin
           category: http-plugin
@@ -82,7 +85,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
           paths: test/projects/multi/orders
           category: no-token
@@ -103,7 +106,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
           paths: test/projects/multi/orders
           category: empty-token
@@ -126,7 +129,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
           paths: test/projects/multi
           category: duplicate-keys
@@ -151,7 +154,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
           paths: test/projects/multi
           category: shared-project-key
@@ -173,7 +176,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
           paths: test/projects/multi
           category: leftover-project-key
@@ -197,7 +200,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
           paths: test/projects/multi
           category: shared-project-name
@@ -223,7 +226,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
           paths: test/projects/multi/orders
           category: project-key-twice
@@ -247,7 +250,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
           paths: test/projects/multi/orders
           category: http-host
@@ -269,7 +272,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
           paths: test/projects/multi/orders
           category: unmatched-package
@@ -334,8 +337,13 @@ jobs:
           echo "::error::The plugin server did not start"
           exit 1
 
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/sonarqube/remote-plugin
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
           ballerina-version: 2201.13.5
           paths: test/sonarqube/remote-plugin
@@ -361,8 +369,13 @@ jobs:
       packages: read
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/multi/orders
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
           ballerina-version: 2201.13.5
           paths: test/projects/multi/orders
@@ -391,8 +404,13 @@ jobs:
       packages: read
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/sonarqube/properties
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
           ballerina-version: 2201.13.5
           paths: test/sonarqube/properties
@@ -415,8 +433,13 @@ jobs:
       packages: read
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/sonarqube/properties
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
           ballerina-version: 2201.13.5
           paths: test/sonarqube/properties
@@ -443,8 +466,13 @@ jobs:
       packages: read
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: test/projects/multi/orders
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
           ballerina-version: 2201.13.5
           paths: test/projects/multi
@@ -469,7 +497,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
           paths: test/projects/multi/orders
           category: old-plugin-version
@@ -482,20 +510,25 @@ jobs:
               token: dummy-token
               project-key: orders
 
-  # Ballerina and scan tool: 2201.12.0, and bal scan 0.11.0, which Ballerina Central picks for it.
-  # Plugin: the default, 0.3.0, which also works with bal scan 0.11.0.
+  # Ballerina and scan tool: 2201.12.0, and bal scan 0.11.1, the latest compatible with it.
+  # Plugin: the default, 0.3.0, which also works with bal scan 0.11.1.
   # Server and token: vars.SONAR_HOST_URL and secrets.SONAR_TOKEN, from the platform level.
   # Key: oldest-tool, from the platform level, and the project is named after it.
   oldest-tool:
-    name: Plugin 0.3.0 with bal scan 0.11.0 on Ballerina 2201.12.0 (passes)
+    name: Plugin 0.3.0 with bal scan 0.11.1 on Ballerina 2201.12.0 (passes)
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: read
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.12.0
+          packages: test/projects/oldest
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
           ballerina-version: 2201.12.0
           paths: test/projects/oldest
@@ -517,7 +550,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Scan
-        uses: CharanaManawathilake/scan-ballerina@support-scan-tool-0.11.0
+        uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
           ballerina-version: 2201.12.0
           paths: test/projects/workspace

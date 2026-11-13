@@ -14,8 +14,9 @@ on:
 permissions:
   contents: read
 
-# Scans the package in marketplace, with the Marketplace release of the action, and reports to the
-# SonarQube server in the SONAR_HOST_URL variable with the SONAR_TOKEN secret. The token needs the
+# Scans the package in marketplace, with the action's support-in-source-suppressions branch, after
+# bal build, since bal scan scans only packages whose dependencies are locked and pulled. Reports
+# to the SonarQube server in the SONAR_HOST_URL variable with the SONAR_TOKEN secret. The token needs the
 # Execute Analysis and Create Projects permissions so that the project key is created on its first
 # analysis, and the server needs the Ballerina plugin installed.
 # The package is not at the repository root: Ballerina 2201.12 does not load a package inside
@@ -31,8 +32,13 @@ jobs:
       packages: read
     steps:
       - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/bal-build
+        with:
+          ballerina-version: 2201.13.5
+          packages: marketplace
       - name: Scan
-        uses: ballerina-platform/scan-ballerina@v0
+        uses: CharanaManawathilake/scan-ballerina@support-in-source-suppressions
         with:
           ballerina-version: 2201.13.5
           paths: marketplace
